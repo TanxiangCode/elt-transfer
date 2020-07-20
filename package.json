@@ -35,10 +35,17 @@
     "@vue/cli-plugin-babel": "^3.10.0",
     "@vue/cli-plugin-eslint": "^3.10.0",
     "@vue/cli-service": "^3.10.0",
+    "acorn": ">=5.7.4",
     "babel-eslint": "^10.0.1",
+    "lodash": ">=4.17.19",
     "eslint": "^5.16.0",
+    "eslint-utils": ">=1.4.1",
     "eslint-plugin-vue": "^5.0.0",
-    "vue-template-compiler": "^2.6.10"
+    "kind-of": ">=6.0.3",
+    "minimist": ">=1.2.3",
+    "serialize-javascript": ">=2.1.1",
+    "vue-template-compiler": "^2.6.10",
+    "websocket-extensions": ">=0.1.4"
   },
   "eslintConfig": {
     "root": true,

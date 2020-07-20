@@ -34,5 +34,6 @@ Vue.use(eltTransfer)
 | - | 自定义列的内容，参数为 { row, column } |
 
 
+## NPM
 npm地址: [https://www.npmjs.com/package/elt-transfer](https://www.npmjs.com/package/elt-transfer)
 
