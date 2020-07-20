@@ -1,0 +1,70 @@
+{
+  "name": "elt-transfer",
+  "version": "0.0.1",
+  "author": "TanXiang",
+  "description": "基于ElementUI实现的可分页表格穿梭框",
+  "main": "src/index.js",
+  "license": "MIT",
+  "private": false,
+  "keywords": [
+    "element-ui",
+    "table",
+    "pagination",
+    "transfer"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TanxiangCode/elt-transfer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/TanxiangCode/elt-transfer/issues"
+  },
+  "homepage": "https://github.com/TanxiangCode/elt-transfer#readme",
+  "scripts": {
+    "serve": "vue-cli-service serve",
+    "build": "vue-cli-service build",
+    "lint": "vue-cli-service lint",
+    "lib": "vue-cli-service build --target lib --name eltabletransfer --dest lib src/index.js"
+  },
+  "dependencies": {
+    "core-js": "^2.6.5",
+    "element-ui": "^2.11.1",
+    "vue": "^2.6.10"
+  },
+  "devDependencies": {
+    "@vue/cli-plugin-babel": "^3.10.0",
+    "@vue/cli-plugin-eslint": "^3.10.0",
+    "@vue/cli-service": "^3.10.0",
+    "babel-eslint": "^10.0.1",
+    "eslint": "^5.16.0",
+    "eslint-plugin-vue": "^5.0.0",
+    "vue-template-compiler": "^2.6.10"
+  },
+  "eslintConfig": {
+    "root": true,
+    "env": {
+      "node": true
+    },
+    "extends": [
+      "plugin:vue/essential",
+      "eslint:recommended"
+    ],
+    "rules": {},
+    "parserOptions": {
+      "parser": "babel-eslint"
+    }
+  },
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {}
+    }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions"
+  ],
+  "directories": {
+    "example": "examples",
+    "lib": "lib"
+  }
+}
