@@ -1,11 +1,14 @@
 <template>
   <div id="app">
     <elt-transfer
+        :show-query="true"
         :show-pagination="true"
         :pagination-call-back="paginationCallBack"
-        :title-texts="['待选','已选']"
         :left-columns="leftColumns"
+        :title-texts="['待选','已选']"
         :button-texts="['添加','删除']"
+        :query-texts="['筛选','筛选']"
+        :table-row-key="row=>{row.name}"
         v-model="tableData"
     >
       <!-- 可以使用插槽获取到列信息和行信息，从而进行数据的处理 -->
@@ -14,6 +17,19 @@
           <span v-if="scope.col.id === 'gender'">{{scope.row.gender === '男' ? '男生' : '女生'}}</span>
           <span v-else>{{scope.row[scope.col.id]}}</span>
         </div>
+      </template>
+      <template v-slot:leftCondition="{scope}">
+        <el-form-item label="姓名">
+          <el-input v-model="scope.name" placeholder="姓名"></el-input>
+        </el-form-item>
+        <el-form-item label="年龄">
+          <el-input v-model="scope.age" placeholder="年龄"></el-input>
+        </el-form-item>
+      </template>
+      <template v-slot:rightCondition="{scope}">
+        <el-form-item label="名称">
+          <el-input v-model="scope.name" placeholder="名称"></el-input>
+        </el-form-item>
       </template>
     </elt-transfer>
     <div>
@@ -128,14 +144,20 @@
       'elt-transfer': eltTransfer
     },
     methods: {
-      paginationCallBack(pageIndex, pageSize){
-        let d = this.data1.filter((item, index)=>{
-          if(index >= (pageIndex - 1) * pageSize && index < pageIndex * pageSize) {
+      paginationCallBack(obj) {
+        let d = this.data1.filter((item, index) => {
+          if (index >= (obj.pageIndex - 1) * obj.pageSize && index < obj.pageIndex * obj.pageSize) {
             return true;
           }
           return false;
         });
-        return { total: this.data1.length, data: d};
+        return new Promise(((resolve, reject) => {
+          try {
+            resolve({total: this.data1.length, data: d})
+          } catch {
+            reject()
+          }
+        }))
       },
     }
   }

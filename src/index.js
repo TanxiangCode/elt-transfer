@@ -13,6 +13,6 @@ if(typeof window !== undefined && window.Vue) {
 }
 
 export default {
-	eltTransfer: eltTransfer,
+	eltTransfer,
 	install
 }

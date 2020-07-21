@@ -5,28 +5,39 @@
         <span>{{titleTexts && titleTexts[0]}}</span>
         <span>{{leftSelection.length}}/{{leftTableData.length}}</span>
       </p>
+      <div v-if="showQuery">
+        <el-form :inline="true" :model="leftQueryCondition" class="query-form">
+          <slot name="leftCondition" v-bind:scope="leftQueryCondition"></slot>
+          <el-form-item>
+            <el-button type="primary" @click="onLeftQuerySubmit()">{{queryTexts[0]}}</el-button>
+          </el-form-item>
+        </el-form>
+      </div>
       <el-table
           ref="leftTable"
           size="small"
           :max-height="maxHeight"
           :height="minHeight"
           :data="leftTableData"
+          :row-key="tableRowKey"
           :row-style="handleRowStyle"
           @row-click="handleLeftRowClick"
           @selection-change="handleLeftSelectionChange"
-          border stripe>
+          border
+          stripe>
         <el-table-column
             width="40px"
             type="selection"
             :selectable="handleSelectable"></el-table-column>
-        <el-table-column v-for="col in leftColumns"
-                         :prop="col.id"
-                         :key="col.id"
-                         :label="col.label"
-                         :width="col.width">
+        <el-table-column
+            v-for="col in leftColumns"
+            :prop="col.id"
+            :key="col.id"
+            :label="col.label"
+            :width="col.width">
           <template slot-scope="scope">
             <slot v-bind:scope="{row: scope.row, col: col}">
-
+              <span>{{scope.row[col.id]}}</span>
             </slot>
           </template>
         </el-table-column>
@@ -66,24 +77,35 @@
         <span>{{titleTexts && titleTexts[1]}}</span>
         <span>{{rightSelection.length}}/{{rightTableData.length}}</span>
       </p>
+      <div v-if="showQuery">
+        <el-form :inline="true" :model="rightQueryCondition" class="query-form">
+          <slot name="rightCondition" v-bind:scope="rightQueryCondition"></slot>
+          <el-form-item>
+            <el-button type="primary" @click="onRightQuerySubmit()">{{queryTexts[1]}}</el-button>
+          </el-form-item>
+        </el-form>
+      </div>
       <el-table
           ref="rightTable"
           size="small"
           :max-height="maxHeight"
           :height="minHeight"
-          :data="rightTableData"
+          :data="calcRightTableData"
+          :row-key="tableRowKey"
           @row-click="handleRightRowClick"
           @selection-change="handleRightSelectionChange"
-          border stripe>
+          border
+          stripe>
         <el-table-column width="40px" type="selection"></el-table-column>
-        <el-table-column v-for="col in rightColumns || leftColumns"
-                         :prop="col.id"
-                         :key="col.id"
-                         :label="col.label"
-                         :width="col.width">
+        <el-table-column
+            v-for="col in rightColumns || leftColumns"
+            :prop="col.id"
+            :key="col.id"
+            :label="col.label"
+            :width="col.width">
           <template slot-scope="scope">
             <slot v-bind:scope="{row: scope.row, col: col}">
-
+              <span>{{scope.row[col.id]}}</span>
             </slot>
           </template>
         </el-table-column>
@@ -99,12 +121,18 @@
 
 <script>
   export default {
+    name: 'EltTransfer',
     props: {
       value: {
         type: Array,
         default() {
-          return [];
+          return []
         }
+      },
+      // 显示条件查询
+      showQuery: {
+        type: Boolean,
+        default: false
       },
       // 显示分页
       showPagination: {
@@ -115,7 +143,13 @@
       paginationCallBack: {
         type: Function,
         default: function () {
-          return {total: 0, data: null};
+          return new Promise(((resolve, reject) => {
+            try {
+              resolve({total: 0, data: null})
+            } catch {
+              reject()
+            }
+          }))
         }
       },
       // 标题文本
@@ -129,33 +163,46 @@
       buttonTexts: {
         type: Array,
         default() {
-          return [];
+          return []
         }
       },
-
+      // 查询按钮文本
+      queryTexts: {
+        type: Array,
+        default() {
+          return ['查询','筛选']
+        }
+      },
       // 左侧参数
       leftColumns: {
         type: Array,
         default() {
-          return [];
+          return []
         }
       },
       // 右侧参数
       rightColumns: {
         type: Array,
         default() {
-          return undefined;
+          return undefined
         }
       },
       // 表格最小高度
       minHeight: {
         type: String,
-        default: "300px",
+        default: '300px'
       },
       // 表格最大高度
       maxHeight: {
         type: String,
-        default: "500px",
+        default: '500px'
+      },
+      // 表格行数据的Key
+      tableRowKey: {
+        type: Function,
+        default(row) {
+          return row && row && row.id
+        }
       }
     },
     data() {
@@ -164,93 +211,124 @@
         rightTableData: this.value || [],
         pageIndex: 1,
         pageSize: 20,
-        totalSize: 100,
+        totalSize: 0,
         leftSelection: [],
         rightSelection: [],
+        leftQueryCondition: {},
+        rightQueryCondition: {},
+        rightConditionTemp: undefined
       }
     },
     created() {
-      this.handlePaginationCallBack();
+      this.handlePaginationCallBack()
     },
     computed: {
       hasButtonTexts() {
-        return this.buttonTexts.length === 2;
+        return this.buttonTexts.length === 2
       },
       buttonClasses() {
-        return ['transfer-button', {'is-with-texts': this.hasButtonTexts}];
+        return ['transfer-button', {'is-with-texts': this.hasButtonTexts}]
       },
       disabledLeftButton() {
-        return !this.leftSelection.some(item => this.rightTableData.indexOf(item) === -1);
+        return !this.leftSelection.some(item => this.rightTableData.indexOf(item) === -1)
       },
+      calcRightTableData() {
+        if (this.showQuery && this.rightConditionTemp) {
+          const conditionKeys = Object.keys(this.rightConditionTemp);
+          return this.rightTableData.filter(data => {
+            return conditionKeys.some(key => {
+              const rowCellData = data[key];
+              const condVal = this.rightConditionTemp[key].trim();
+              if (rowCellData) {
+                return String(rowCellData).indexOf(condVal) > -1
+              }
+              return true;
+            })
+          })
+        }
+        return this.rightTableData;
+      }
     },
     methods: {
       handleLeftSelectionChange(selection) {
-        this.leftSelection = selection;
+        this.leftSelection = selection
       },
       handleRightSelectionChange(selection) {
-        this.rightSelection = selection;
+        this.rightSelection = selection
       },
       handleLeftRowClick(row) {
         if (this.rightTableData.indexOf(row) === -1) {
-          this.$refs.leftTable.toggleRowSelection(row);
+          this.$refs.leftTable.toggleRowSelection(row)
         }
       },
       handleRightRowClick(row) {
-        this.$refs.rightTable.toggleRowSelection(row);
+        this.$refs.rightTable.toggleRowSelection(row)
       },
       handleSizeChange(val) {
-        this.pageSize = val;
-        this.handlePaginationCallBack();
+        this.pageSize = val
+        this.handlePaginationCallBack()
       },
       handleCurrentChange(val) {
-        this.pageIndex = val;
-        this.handlePaginationCallBack();
+        this.pageIndex = val
+        this.handlePaginationCallBack()
       },
       handlePaginationCallBack() {
         if (this.showPagination && this.paginationCallBack) {
-          let result = this.paginationCallBack.call(null, this.pageIndex, this.pageSize);
-          if (result && Array.isArray(result.data)) {
-            this.leftTableData = result.data;
-            this.totalSize = result.total;
+          const condition = {
+            pageIndex: this.pageIndex,
+            pageSize: this.pageSize,
+            ...this.leftQueryCondition
           }
+          this.paginationCallBack.call(null, condition).then(result => {
+            if (result && Array.isArray(result.data)) {
+              this.leftTableData = result.data
+              this.totalSize = result.total
+            }
 
-          this.$nextTick(() => {
-            this.leftTableData.forEach(item => {
-              let index = this.rightTableData.indexOf(item);
-              this.$refs.leftTable.toggleRowSelection(item, index !== -1);
-            });
+            this.$nextTick(() => {
+              this.leftTableData.forEach(item => {
+                const index = this.rightTableData.indexOf(item)
+                this.$refs.leftTable.toggleRowSelection(item, index !== -1)
+              })
+            })
           })
         }
       },
       handleRowStyle({row}) {
         if (this.rightTableData.indexOf(row) !== -1) {
           return {
-            color: "blue",
-          };
-        }
-        return {};
-      },
-      handleSelectable(row) {
-        return this.rightTableData.indexOf(row) === -1;
-      },
-      addToRight() {
-        for (let item of this.leftSelection) {
-          let index = this.rightTableData.indexOf(item);
-          if (index === -1) {
-            this.rightTableData.push(item);
+            color: 'blue'
           }
         }
-        this.$emit('input', this.rightTableData);
+        return {}
+      },
+      handleSelectable(row) {
+        return this.rightTableData.indexOf(row) === -1
+      },
+      addToRight() {
+        for (const item of this.leftSelection) {
+          const index = this.rightTableData.indexOf(item)
+          if (index === -1) {
+            this.rightTableData.push(item)
+          }
+        }
+        this.$emit('input', this.rightTableData)
       },
       addToLeft() {
         this.rightSelection.forEach(item => {
-          let index = this.rightTableData.indexOf(item);
+          const index = this.rightTableData.indexOf(item)
           if (index !== -1) {
-            this.rightTableData.splice(index, 1);
-            this.$refs.leftTable.toggleRowSelection(item, false);
+            this.rightTableData.splice(index, 1)
+            this.$refs.leftTable.toggleRowSelection(item, false)
           }
-        });
-        this.$emit('input', this.rightTableData);
+        })
+        this.$emit('input', this.rightTableData)
+      },
+      onLeftQuerySubmit() {
+        this.handlePaginationCallBack();
+      },
+      onRightQuerySubmit() {
+        this.rightConditionTemp = JSON.parse(JSON.stringify(this.rightQueryCondition));
       }
     }
   }
@@ -339,5 +417,15 @@
 
   .transfer-button i, .transfer-button span {
     font-size: 14px
+  }
+
+  .query-form {
+    margin: 5px;
+  }
+</style>
+
+<style>
+  .query-form .el-form-item {
+    margin-bottom: 0;
   }
 </style>
