@@ -8,7 +8,7 @@
         :title-texts="['待选','已选']"
         :button-texts="['添加','删除']"
         :query-texts="['筛选','筛选']"
-        :table-row-key="row=>{row.name}"
+        :table-row-key="row => row.name"
         v-model="tableData"
     >
       <!-- 可以使用插槽获取到列信息和行信息，从而进行数据的处理 -->
@@ -145,6 +145,7 @@
     },
     methods: {
       paginationCallBack(obj) {
+        // console.log(obj)
         let d = this.data1.filter((item, index) => {
           if (index >= (obj.pageIndex - 1) * obj.pageSize && index < obj.pageIndex * obj.pageSize) {
             return true;

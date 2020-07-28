@@ -58,16 +58,16 @@
       <el-button
           type="primary"
           :class="buttonClasses"
-          @click.native="addToRight"
-          :disabled="disabledLeftButton">
+          :disabled="disabledLeftButton"
+          @click.native="addToRight">
         <span v-if="buttonTexts[0] !== undefined" class="button-text">{{ buttonTexts[0] }}</span>
         <i class="el-icon-arrow-right"></i>
       </el-button>
       <el-button
           type="primary"
           :class="buttonClasses"
-          @click.native="addToLeft"
-          :disabled="rightSelection.length === 0">
+          :disabled="rightSelection.length === 0"
+          @click.native="addToLeft">
         <i class="el-icon-arrow-left"></i>
         <span v-if="buttonTexts[1] !== undefined" class="button-text">{{ buttonTexts[1] }}</span>
       </el-button>
@@ -230,7 +230,7 @@
         return ['transfer-button', {'is-with-texts': this.hasButtonTexts}]
       },
       disabledLeftButton() {
-        return !this.leftSelection.some(item => this.rightTableData.indexOf(item) === -1)
+        return !this.leftSelection.some(leftRow => !this.rightTableData.some(rightRow => this.checkObjectIsEqual(leftRow, rightRow)))
       },
       calcRightTableData() {
         if (this.showQuery && this.rightConditionTemp) {
@@ -257,7 +257,7 @@
         this.rightSelection = selection
       },
       handleLeftRowClick(row) {
-        if (this.rightTableData.indexOf(row) === -1) {
+        if (!this.rightTableData.some(rightRow => this.checkObjectIsEqual(rightRow, row))) {
           this.$refs.leftTable.toggleRowSelection(row)
         }
       },
@@ -286,16 +286,16 @@
             }
 
             this.$nextTick(() => {
-              this.leftTableData.forEach(item => {
-                const index = this.rightTableData.indexOf(item)
-                this.$refs.leftTable.toggleRowSelection(item, index !== -1)
+              this.leftTableData.forEach(leftRow => {
+                const isHave = this.rightTableData.some(rightRow => this.checkObjectIsEqual(rightRow, leftRow))
+                this.$refs.leftTable.toggleRowSelection(leftRow, isHave)
               })
             })
           })
         }
       },
       handleRowStyle({row}) {
-        if (this.rightTableData.indexOf(row) !== -1) {
+        if (this.rightTableData.some(rightRow => this.checkObjectIsEqual(rightRow, row))) {
           return {
             color: 'blue'
           }
@@ -303,12 +303,12 @@
         return {}
       },
       handleSelectable(row) {
-        return this.rightTableData.indexOf(row) === -1
+        return !this.rightTableData.some(rightRow => this.checkObjectIsEqual(rightRow, row))
       },
       addToRight() {
         for (const item of this.leftSelection) {
-          const index = this.rightTableData.indexOf(item)
-          if (index === -1) {
+          const isHave = this.rightTableData.some(rightRow => this.checkObjectIsEqual(rightRow, item))
+          if (!isHave) {
             this.rightTableData.push(item)
           }
         }
@@ -316,7 +316,7 @@
       },
       addToLeft() {
         this.rightSelection.forEach(item => {
-          const index = this.rightTableData.indexOf(item)
+          const index = this.rightTableData.findIndex(rightRow => this.checkObjectIsEqual(rightRow, item))
           if (index !== -1) {
             this.rightTableData.splice(index, 1)
             this.$refs.leftTable.toggleRowSelection(item, false)
@@ -329,6 +329,9 @@
       },
       onRightQuerySubmit() {
         this.rightConditionTemp = JSON.parse(JSON.stringify(this.rightQueryCondition));
+      },
+      checkObjectIsEqual(rowObj1, rowObj2) {
+        return this.tableRowKey(rowObj1) === this.tableRowKey(rowObj2)
       }
     }
   }
