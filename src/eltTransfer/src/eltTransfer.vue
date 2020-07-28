@@ -319,7 +319,11 @@
           const index = this.rightTableData.findIndex(rightRow => this.checkObjectIsEqual(rightRow, item))
           if (index !== -1) {
             this.rightTableData.splice(index, 1)
-            this.$refs.leftTable.toggleRowSelection(item, false)
+
+            const leftRow = this.leftTableData.find(leftRow => this.checkObjectIsEqual(leftRow, item))
+            if(leftRow) {
+              this.$refs.leftTable.toggleRowSelection(leftRow, false)
+            }
           }
         })
         this.$emit('input', this.rightTableData)

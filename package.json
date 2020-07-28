@@ -1,6 +1,6 @@
 {
   "name": "elt-transfer",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "author": "TanXiang",
   "description": "基于ElementUI实现的可分页表格穿梭框",
   "main": "src/index.js",
