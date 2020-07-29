@@ -33,6 +33,11 @@ Vue.use(eltTransfer)
 | max-height | 表格最大高度 | string | 500px |
 | table-row-key | 表格行数据的Key | function(row) | row.id |
 
+## Methods
+| 参数 | 说明 | 参数 |
+| :--- | :--- | :--- |
+| clear | 清除所有的操作后产生的数据 | - |
+
 ## Slot
 | 名称 | 说明 |
 | :--- | :--- |

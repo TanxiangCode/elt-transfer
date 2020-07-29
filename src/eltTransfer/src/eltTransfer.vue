@@ -336,6 +336,18 @@
       },
       checkObjectIsEqual(rowObj1, rowObj2) {
         return this.tableRowKey(rowObj1) === this.tableRowKey(rowObj2)
+      },
+      clear(){
+        this.rightTableData = [];
+        this.$refs.leftTable.clearSelection();
+        for (const key in this.leftQueryCondition) {
+          this.leftQueryCondition[key] = undefined;
+        }
+        for (const key in this.rightQueryCondition) {
+          this.rightQueryCondition[key] = undefined;
+        }
+        this.pageIndex = 1;
+        this.handlePaginationCallBack();
       }
     }
   }

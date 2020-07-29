@@ -1,6 +1,7 @@
 <template>
   <div id="app">
     <elt-transfer
+        ref="eltTransfer"
         :show-query="true"
         :show-pagination="true"
         :pagination-call-back="paginationCallBack"
@@ -35,6 +36,7 @@
     <div>
       v-Model : {{tableData.length}}
     </div>
+    <el-button @click="clearTransfer()">清空</el-button>
   </div>
 </template>
 
@@ -160,6 +162,9 @@
           }
         }))
       },
+      clearTransfer() {
+        this.$refs.eltTransfer.clear()
+      }
     }
   }
 </script>
